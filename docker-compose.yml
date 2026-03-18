@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: capstone
+      POSTGRES_USER: capstone
+      POSTGRES_PASSWORD: capstone
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://capstone:capstone@db/capstone
+      SECRET_KEY: dev-secret-key-change-in-prod
+      DEBUG: "True"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
