@@ -17,10 +17,9 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
-      DATABASE_URL: postgresql://capstone:capstone@db/capstone
-      SECRET_KEY: dev-secret-key-change-in-prod
-      DEBUG: "True"
+      DATABASE_URL: postgresql://capstone:capstone@db:5432/capstone
     depends_on:
       - db
 

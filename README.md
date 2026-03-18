@@ -3,19 +3,78 @@
 Sam's business management system.
 Standalone Django app with Microsoft Entra ID sign-in.
 
-## Quick start
+## Quick Start (Docker Desktop)
+
+### Prerequisites
+
+- Docker Desktop installed and running
+- A Microsoft Entra app registration (see Entra Setup below)
+
+### 1. Configure environment
 
 ```bash
 git clone ... && cd capstone-client
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
 cp .env.example .env
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py seed
-python manage.py runserver
-# Open http://localhost:8000/admin/
 ```
+
+Open `.env` and fill in your 3 Entra values:
+
+```
+AZURE_TENANT_ID=your-directory-tenant-id
+AZURE_CLIENT_ID=your-application-client-id
+AZURE_CLIENT_SECRET=your-client-secret-value
+```
+
+### 2. Start the app
+
+```bash
+docker compose up --build
+```
+
+### 3. Initialize the database
+
+In a new terminal:
+
+```bash
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py seed
+```
+
+### 4. Open the app
+
+Go to http://localhost:8000/oauth2/login and sign in with Microsoft.
+
+Or click "Sign in with Microsoft" in the nav bar.
+
+### Subsequent runs
+
+```bash
+docker compose up
+```
+
+No `--build` needed after first time (only rebuild when `requirements.txt` or `Dockerfile` changes).
+
+### Stop the app
+
+```bash
+docker compose down
+```
+
+### Useful commands
+
+```bash
+# Run tests:
+docker compose exec web python manage.py test tests
+
+# Django shell:
+docker compose exec web python manage.py shell
+
+# View logs:
+docker compose logs -f web
+```
+
+---
 
 ## Sign in with Microsoft (Entra ID)
 
@@ -33,7 +92,7 @@ python manage.py runserver
 
 ### Step 2: Add credentials to .env
 
-```bash
+```
 AZURE_TENANT_ID=your-directory-tenant-id
 AZURE_CLIENT_ID=your-application-client-id
 AZURE_CLIENT_SECRET=your-client-secret-value
@@ -42,12 +101,14 @@ AZURE_CLIENT_SECRET=your-client-secret-value
 ### Step 3: Restart and sign in
 
 ```bash
-python manage.py runserver
-# Open http://localhost:8000/oauth2/login
-# Or click "Sign in with Microsoft" in the nav bar
+docker compose down && docker compose up
 ```
 
+Go to http://localhost:8000/oauth2/login.
+
 Without Entra credentials, the app falls back to Django admin login at `/admin/login/`.
+
+---
 
 ## Apps
 
@@ -63,8 +124,21 @@ In Django admin > Sync > Add Sync Configuration:
 - Shared secret: (ask Tyler)
 - Instance ID: your business slug (e.g. "entropyopposition")
 
-## Running tests
+---
+
+## Local Development (without Docker)
+
+If you prefer running without Docker:
 
 ```bash
-python manage.py test tests
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env: set DATABASE_URL to a local PostgreSQL (or leave unset for SQLite)
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py seed
+python manage.py runserver
+# Open http://localhost:8000/admin/
 ```
